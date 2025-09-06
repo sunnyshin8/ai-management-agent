@@ -1,0 +1,16 @@
+fastapi
+uvicorn
+pydantic
+sqlalchemy
+python-dotenv
+openai
+nltk
+textblob
+python-multipart
+httpx
+imapclient
+email-validator
+python-jose[cryptography]
+passlib[bcrypt]
+python-dateutil
+aiofiles
