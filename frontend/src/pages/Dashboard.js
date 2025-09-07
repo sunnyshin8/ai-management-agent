@@ -35,7 +35,7 @@ import toast from 'react-hot-toast';
 const Dashboard = () => {
   const [stats, setStats] = useState(null);
   const [recentEmails, setRecentEmails] = useState([]);
-  const [categoryStats, setCategoryStats] = useState([]);
+  // const [categoryStats, setCategoryStats] = useState([]);
   const [responseStats, setResponseStats] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -46,16 +46,16 @@ const Dashboard = () => {
   const loadDashboardData = async () => {
     try {
       setLoading(true);
-      const [statsRes, recentRes, categoryRes, responseRes] = await Promise.all([
+      const [statsRes, recentRes, /* categoryRes, */ responseRes] = await Promise.all([
         dashboardAPI.getStats(),
         dashboardAPI.getRecentEmails(5),
-        dashboardAPI.getCategoryStats(),
+        // dashboardAPI.getCategoryStats(),
         dashboardAPI.getResponseStats(),
       ]);
 
       setStats(statsRes.data);
       setRecentEmails(recentRes.data);
-      setCategoryStats(categoryRes.data.categories);
+      // setCategoryStats(categoryRes.data.categories);
       setResponseStats(responseRes.data);
     } catch (error) {
       toast.error('Failed to load dashboard data');

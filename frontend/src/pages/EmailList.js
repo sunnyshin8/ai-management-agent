@@ -13,13 +13,13 @@ import {
   Grid,
   Card,
   CardContent,
-  CircularProgress,
-  Pagination,
+  // CircularProgress,
+  // Pagination,
 } from '@mui/material';
 import { DataGrid } from '@mui/x-data-grid';
 import {
   Email as EmailIcon,
-  Send as SendIcon,
+  // Send as SendIcon,
   CheckCircle as CheckCircleIcon,
   Pending as PendingIcon,
 } from '@mui/icons-material';
@@ -45,7 +45,7 @@ const EmailList = () => {
 
   useEffect(() => {
     loadEmails();
-  }, [filters, pagination.page, pagination.pageSize]);
+  }, [filters, pagination.page, pagination.pageSize]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const loadEmails = async () => {
     try {
