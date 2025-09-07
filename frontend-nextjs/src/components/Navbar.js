@@ -53,7 +53,7 @@ const Navbar = () => {
             }} 
           />
         </Box>
-        <Typography 
+        {/* <Typography 
           variant="h5" 
           component="div" 
           sx={{ 
@@ -63,9 +63,17 @@ const Navbar = () => {
             textShadow: '0 2px 4px rgba(0,0,0,0.1)'
           }}
         >
-          🤖 AI Communication Assistant
-        </Typography>
-        
+          🤖 Inbox Jinie
+        </Typography> */}
+        <div className="animated-title" style={{
+          flexGrow: 1,
+          fontSize: '1.5rem',
+          fontWeight: 'bold',
+          textShadow: '0 2px 4px rgba(0,0,0,0.1)'
+        }}>
+          🤖 Inbox Jinie
+        </div>
+
         <Box sx={{ display: 'flex', gap: 2 }}>
           <Button
             color="inherit"

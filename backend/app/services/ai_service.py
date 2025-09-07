@@ -1,6 +1,7 @@
 import os
 import json
 import re
+from openai import OpenAI
 from typing import Dict, List, Any, Tuple
 from textblob import TextBlob
 from datetime import datetime
@@ -43,8 +44,9 @@ class AIService:
         """Analyze sentiment using TextBlob and return sentiment label and score"""
         try:
             blob = TextBlob(text)
-            polarity = blob.sentiment.polarity
-            
+            # Use getattr to safely access polarity
+            polarity = getattr(blob.sentiment, 'polarity', 0.5)
+
             if polarity > 0.1:
                 sentiment = "positive"
             elif polarity < -0.1:
@@ -160,8 +162,7 @@ class AIService:
             )
             
             # Call OpenAI API with new format
-            from openai import OpenAI
-            client = OpenAI(api_key=self.openai_api_key)
+            client = OpenAI(api_key=self.openai_api_key, base_url="https://openrouter.ai/api/v1")
             
             response = client.chat.completions.create(
                 model="gpt-3.5-turbo",
@@ -172,8 +173,13 @@ class AIService:
                 max_tokens=300,
                 temperature=0.7
             )
+
+            content = response.choices[0].message.content
+
+            if not content:
+                raise ValueError("Empty response from OpenAI")
             
-            return response.choices[0].message.content.strip()
+            return content.strip()
             
         except Exception as e:
             print(f"Error generating AI response: {e}")

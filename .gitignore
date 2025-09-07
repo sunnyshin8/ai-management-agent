@@ -130,3 +130,5 @@ temp/
 # Azure & Cloud
 .azure/
 azure.yaml
+
+frontend-nextjs/.next/

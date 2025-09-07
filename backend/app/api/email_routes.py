@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
 from sqlalchemy.orm import Session
 from sqlalchemy import desc, and_
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 from datetime import datetime, timedelta
 import json
 
@@ -20,9 +20,9 @@ ai_service = AIService()
 async def get_emails(
     skip: int = 0,
     limit: int = 100,
-    priority_filter: str = None,
-    sentiment_filter: str = None,
-    processed_filter: bool = None,
+    priority_filter: Optional[str] = None,
+    sentiment_filter: Optional[str] = None,
+    processed_filter: Optional[bool] = None,
     db: Session = Depends(get_db)
 ):
     """Get all emails with optional filtering"""
@@ -184,7 +184,7 @@ async def generate_response(
 @router.post("/{email_id}/send-response")
 async def send_response(
     email_id: int,
-    custom_response: str = None,
+    custom_response: Optional[str] = None,
     db: Session = Depends(get_db)
 ):
     """Send response email"""
