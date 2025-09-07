@@ -1,6 +1,7 @@
 import csv
 import os
-from datetime import datetime
+import random
+from datetime import datetime, timedelta
 from app.models.database import create_tables, SessionLocal, Email
 from app.services.ai_service import AIService
 
@@ -11,17 +12,21 @@ def import_csv_emails():
     ai_service = AIService()
     db = SessionLocal()
     count = 0
+    
+    # Clear existing emails to avoid duplicates
+    db.query(Email).delete()
+    db.commit()
+    
     with open(CSV_PATH, newline='', encoding='utf-8') as csvfile:
         reader = csv.DictReader(csvfile)
         for row in reader:
             sender = row['sender']
             subject = row['subject']
             body = row['body']
-            sent_date = row['sent_date']
-            try:
-                received_at = datetime.strptime(sent_date, "%Y-%m-%d %H:%M:%S")
-            except Exception:
-                received_at = datetime.utcnow()
+            
+            # Use current time with random offset in the last 24 hours for recent data
+            hours_ago = random.uniform(0, 24)
+            received_at = datetime.utcnow() - timedelta(hours=hours_ago)
             email_data = {
                 'sender_email': sender,
                 'subject': subject,

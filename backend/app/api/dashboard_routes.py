@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 from typing import List, Dict, Any
 
 from app.models.database import get_db, Email, EmailStats
-from app.models.schemas import DashboardStats, SentimentBreakdown, PriorityBreakdown
+from app.models.schemas import DashboardStats
 
 router = APIRouter()
 
@@ -98,8 +98,8 @@ async def get_dashboard_stats(db: Session = Depends(get_db)):
         processed_emails=processed_emails,
         pending_emails=pending_emails,
         urgent_emails=urgent_emails,
-        sentiment_breakdown=SentimentBreakdown(**sentiment_breakdown),
-        priority_breakdown=PriorityBreakdown(**priority_breakdown),
+        sentiment_breakdown=sentiment_breakdown,
+        priority_breakdown=priority_breakdown,
         hourly_stats=hourly_stats
     )
 
