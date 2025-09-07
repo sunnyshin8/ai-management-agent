@@ -4,7 +4,7 @@ from datetime import datetime
 from app.models.database import create_tables, SessionLocal, Email
 from app.services.ai_service import AIService
 
-CSV_PATH = r"c:\Users\asus\Downloads\68b1acd44f393_Sample_Support_Emails_Dataset.csv"
+CSV_PATH = "sample_emails.csv"
 
 def import_csv_emails():
     create_tables()
