@@ -53,21 +53,74 @@ export const emailAPI = {
 // Dashboard API endpoints
 export const dashboardAPI = {
   // Get dashboard statistics
-  getStats: () => api.get('/api/dashboard/stats'),
+  getStats: async () => {
+    try {
+      return await api.get('/api/dashboard/stats');
+    } catch (error) {
+      console.error('Dashboard stats API error:', error);
+      return { 
+        data: null, 
+        error: error.response?.data || error.message || 'Failed to load stats',
+        status: error.response?.status || 0
+      };
+    }
+  },
   
   // Get recent emails for preview
-  getRecentEmails: (limit = 10) => 
-    api.get('/api/dashboard/recent-emails', { params: { limit } }),
+  getRecentEmails: async (limit = 10) => {
+    try {
+      return await api.get('/api/dashboard/recent-emails', { params: { limit } });
+    } catch (error) {
+      console.error('Recent emails API error:', error);
+      return { 
+        data: [], 
+        error: error.response?.data || error.message || 'Failed to load recent emails',
+        status: error.response?.status || 0
+      };
+    }
+  },
   
   // Get category statistics
-  getCategoryStats: () => api.get('/api/dashboard/category-stats'),
+  getCategoryStats: async () => {
+    try {
+      return await api.get('/api/dashboard/category-stats');
+    } catch (error) {
+      console.error('Category stats API error:', error);
+      return { 
+        data: null, 
+        error: error.response?.data || error.message || 'Failed to load category stats',
+        status: error.response?.status || 0
+      };
+    }
+  },
   
   // Get response statistics
-  getResponseStats: () => api.get('/api/dashboard/response-stats'),
+  getResponseStats: async () => {
+    try {
+      return await api.get('/api/dashboard/response-stats');
+    } catch (error) {
+      console.error('Response stats API error:', error);
+      return { 
+        data: null, 
+        error: error.response?.data || error.message || 'Failed to load response stats',
+        status: error.response?.status || 0
+      };
+    }
+  },
   
   // Get performance metrics
-  getPerformanceMetrics: (days = 7) => 
-    api.get('/api/dashboard/performance-metrics', { params: { days } }),
+  getPerformanceMetrics: async (days = 7) => {
+    try {
+      return await api.get('/api/dashboard/performance-metrics', { params: { days } });
+    } catch (error) {
+      console.error('Performance metrics API error:', error);
+      return { 
+        data: null, 
+        error: error.response?.data || error.message || 'Failed to load performance metrics',
+        status: error.response?.status || 0
+      };
+    }
+  },
 };
 
 // Utility functions

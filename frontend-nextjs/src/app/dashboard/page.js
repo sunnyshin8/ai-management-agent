@@ -41,6 +41,7 @@ const Dashboard = () => {
   const [recentEmails, setRecentEmails] = useState([]);
   const [responseStats, setResponseStats] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     loadDashboardData();
@@ -49,18 +50,82 @@ const Dashboard = () => {
   const loadDashboardData = async () => {
     try {
       setLoading(true);
+      setError(null);
+      
       const [statsRes, recentRes, responseRes] = await Promise.all([
         dashboardAPI.getStats(),
         dashboardAPI.getRecentEmails(5),
         dashboardAPI.getResponseStats(),
       ]);
 
-      setStats(statsRes.data);
-      setRecentEmails(recentRes.data);
-      setResponseStats(responseRes.data);
+      // Handle stats response
+      if (statsRes && statsRes.data && !statsRes.error) {
+        setStats(statsRes.data);
+      } else {
+        console.warn('Stats API failed:', statsRes.error);
+        setStats({
+          total_emails_24h: 0,
+          processed_emails: 0,
+          pending_emails: 0,
+          urgent_emails: 0,
+          sentiment_breakdown: { positive: 0, negative: 0, neutral: 0 },
+          priority_breakdown: { urgent: 0, not_urgent: 0 },
+          hourly_stats: []
+        });
+      }
+      
+      // Handle recent emails response
+      if (recentRes && recentRes.data && !recentRes.error && Array.isArray(recentRes.data)) {
+        setRecentEmails(recentRes.data);
+      } else {
+        console.warn('Recent emails API failed:', recentRes.error);
+        setRecentEmails([]);
+      }
+      
+      // Handle response stats response
+      if (responseRes && responseRes.data && !responseRes.error) {
+        setResponseStats(responseRes.data);
+      } else {
+        console.warn('Response stats API failed:', responseRes.error);
+        setResponseStats({
+          response_rate: 0,
+          avg_response_time_hours: 0,
+          responses_sent: 0,
+          emails_with_responses: 0
+        });
+      }
+
+      // If all APIs failed, show error
+      if (statsRes.error && recentRes.error && responseRes.error) {
+        setError('All dashboard services are currently unavailable. Please check your connection and try again.');
+        toast.error('Dashboard services unavailable');
+      } else if (statsRes.error || recentRes.error || responseRes.error) {
+        // Partial failure - show warning but continue
+        toast.error('Some dashboard data may be incomplete');
+      }
+      
     } catch (error) {
-      toast.error('Failed to load dashboard data');
       console.error('Dashboard error:', error);
+      setError(error.message || 'Failed to load dashboard data');
+      toast.error('Failed to load dashboard data');
+      
+      // Set empty default data for graceful fallback
+      setStats({
+        total_emails_24h: 0,
+        processed_emails: 0,
+        pending_emails: 0,
+        urgent_emails: 0,
+        sentiment_breakdown: { positive: 0, negative: 0, neutral: 0 },
+        priority_breakdown: { urgent: 0, not_urgent: 0 },
+        hourly_stats: []
+      });
+      setRecentEmails([]);
+      setResponseStats({
+        response_rate: 0,
+        avg_response_time_hours: 0,
+        responses_sent: 0,
+        emails_with_responses: 0
+      });
     } finally {
       setLoading(false);
     }
@@ -76,22 +141,51 @@ const Dashboard = () => {
     );
   }
 
-  // Prepare chart data
-  const sentimentData = stats ? Object.entries(stats.sentiment_breakdown).map(([key, value]) => ({
+  if (error && !stats) {
+    return (
+      <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+        <Box sx={{ 
+          display: 'flex', 
+          flexDirection: 'column',
+          alignItems: 'center', 
+          justifyContent: 'center',
+          minHeight: '400px',
+          textAlign: 'center'
+        }}>
+          <Typography variant="h4" color="error" gutterBottom>
+            ⚠️ Dashboard Error
+          </Typography>
+          <Typography variant="h6" color="textSecondary" gutterBottom>
+            {error}
+          </Typography>
+          <Button 
+            variant="contained" 
+            onClick={loadDashboardData}
+            sx={{ mt: 2 }}
+          >
+            Retry
+          </Button>
+        </Box>
+      </Container>
+    );
+  }
+
+  // Prepare chart data with safe access
+  const sentimentData = (stats && stats.sentiment_breakdown) ? Object.entries(stats.sentiment_breakdown).map(([key, value]) => ({
     name: key.charAt(0).toUpperCase() + key.slice(1),
-    value,
+    value: value || 0,
     color: getSentimentColor(key),
   })) : [];
 
-  const priorityData = stats ? Object.entries(stats.priority_breakdown).map(([key, value]) => ({
+  const priorityData = (stats && stats.priority_breakdown) ? Object.entries(stats.priority_breakdown).map(([key, value]) => ({
     name: key === 'not_urgent' ? 'Not Urgent' : 'Urgent',
-    value,
+    value: value || 0,
     color: getPriorityColor(key),
   })) : [];
 
-  const hourlyData = stats ? stats.hourly_stats.slice(-12).map(item => ({
-    hour: new Date(item.hour).getHours() + ':00',
-    emails: item.count,
+  const hourlyData = (stats && stats.hourly_stats && Array.isArray(stats.hourly_stats)) ? stats.hourly_stats.slice(-12).map(item => ({
+    hour: item.hour ? new Date(item.hour).getHours() + ':00' : 'N/A',
+    emails: item.count || 0,
   })) : [];
 
   return (
@@ -285,19 +379,25 @@ const Dashboard = () => {
             <Typography variant="h6" gutterBottom>
               Response Statistics
             </Typography>
-            {responseStats && (
+            {responseStats ? (
               <Box>
                 <Typography variant="body2" gutterBottom>
-                  Response Rate: {responseStats.response_rate.toFixed(1)}%
+                  Response Rate: {(responseStats.response_rate || 0).toFixed(1)}%
                 </Typography>
                 <Typography variant="body2" gutterBottom>
-                  Avg Response Time: {responseStats.avg_response_time_hours}h
+                  Avg Response Time: {responseStats.avg_response_time_hours || 0}h
                 </Typography>
                 <Typography variant="body2" gutterBottom>
-                  Responses Sent: {responseStats.responses_sent}
+                  Responses Sent: {responseStats.responses_sent || 0}
                 </Typography>
                 <Typography variant="body2">
-                  AI Responses Generated: {responseStats.emails_with_responses}
+                  AI Responses Generated: {responseStats.emails_with_responses || 0}
+                </Typography>
+              </Box>
+            ) : (
+              <Box sx={{ textAlign: 'center', py: 4 }}>
+                <Typography variant="body2" color="textSecondary">
+                  No response data available
                 </Typography>
               </Box>
             )}
@@ -319,54 +419,62 @@ const Dashboard = () => {
                 View All
               </Button>
             </Box>
-            <List>
-              {recentEmails.map((email) => (
-                <ListItem 
-                  key={email.id} 
-                  divider
-                  sx={{ cursor: 'pointer' }}
-                  onClick={() => router.push(`/emails/${email.id}`)}
-                >
-                  <ListItemText
-                    primary={
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <Typography variant="subtitle1" component="span">
-                          {email.subject}
-                        </Typography>
-                        <Chip
-                          label={email.priority}
-                          size="small"
-                          sx={{
-                            backgroundColor: getPriorityColor(email.priority),
-                            color: 'white',
-                            fontSize: '0.7rem'
-                          }}
-                        />
-                        <Chip
-                          label={email.sentiment}
-                          size="small"
-                          sx={{
-                            backgroundColor: getSentimentColor(email.sentiment),
-                            color: 'white',
-                            fontSize: '0.7rem'
-                          }}
-                        />
-                      </Box>
-                    }
-                    secondary={
-                      <Box>
-                        <Typography variant="body2" color="textSecondary">
-                          From: {email.sender_email}
-                        </Typography>
-                        <Typography variant="caption" color="textSecondary">
-                          {formatRelativeTime(email.received_at)} • {email.processed ? 'Processed' : 'Pending'}
-                        </Typography>
-                      </Box>
-                    }
-                  />
-                </ListItem>
-              ))}
-            </List>
+            {recentEmails && recentEmails.length > 0 ? (
+              <List>
+                {recentEmails.map((email) => (
+                  <ListItem 
+                    key={email.id} 
+                    divider
+                    sx={{ cursor: 'pointer' }}
+                    onClick={() => router.push(`/emails/${email.id}`)}
+                  >
+                    <ListItemText
+                      primary={
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <Typography variant="subtitle1" component="span">
+                            {email.subject || 'No Subject'}
+                          </Typography>
+                          <Chip
+                            label={email.priority || 'normal'}
+                            size="small"
+                            sx={{
+                              backgroundColor: getPriorityColor(email.priority),
+                              color: 'white',
+                              fontSize: '0.7rem'
+                            }}
+                          />
+                          <Chip
+                            label={email.sentiment || 'neutral'}
+                            size="small"
+                            sx={{
+                              backgroundColor: getSentimentColor(email.sentiment),
+                              color: 'white',
+                              fontSize: '0.7rem'
+                            }}
+                          />
+                        </Box>
+                      }
+                      secondary={
+                        <Box>
+                          <Typography variant="body2" color="textSecondary">
+                            From: {email.sender_email || 'Unknown'}
+                          </Typography>
+                          <Typography variant="caption" color="textSecondary">
+                            {email.received_at ? formatRelativeTime(email.received_at) : 'Unknown time'} • {email.processed ? 'Processed' : 'Pending'}
+                          </Typography>
+                        </Box>
+                      }
+                    />
+                  </ListItem>
+                ))}
+              </List>
+            ) : (
+              <Box sx={{ textAlign: 'center', py: 4 }}>
+                <Typography variant="body2" color="textSecondary">
+                  No recent emails available
+                </Typography>
+              </Box>
+            )}
           </Paper>
         </Grid>
       </Grid>
