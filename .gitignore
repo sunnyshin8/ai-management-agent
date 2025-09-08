@@ -93,7 +93,7 @@ htmlcov/
 dmypy.json
 
 # AI & ML specific
-models/
+/models/
 *.pkl
 *.pickle
 *.joblib
