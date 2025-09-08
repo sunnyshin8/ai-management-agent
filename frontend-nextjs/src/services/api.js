@@ -1,9 +1,7 @@
 import axios from 'axios';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-
 const api = axios.create({
-  baseURL: API_BASE_URL,
+  baseURL: "/api",
   headers: {
     'Content-Type': 'application/json',
   },
@@ -12,42 +10,42 @@ const api = axios.create({
 // Email API endpoints
 export const emailAPI = {
   // Get all emails with filtering options
-  getEmails: (params = {}) => api.get('/api/emails/', { params }),
-  
+  getEmails: (params = {}) => api.get('/emails/', { params }),
+
   // Get specific email by ID
-  getEmail: (id) => api.get(`/api/emails/${id}`),
-  
+  getEmail: (id) => api.get(`/emails/${id}`),
+
   // Get urgent emails
-  getUrgentEmails: () => api.get('/api/emails/urgent'),
-  
+  getUrgentEmails: () => api.get('/emails/urgent'),
+
   // Get unprocessed emails
-  getUnprocessedEmails: () => api.get('/api/emails/unprocessed'),
-  
+  getUnprocessedEmails: () => api.get('/emails/unprocessed'),
+
   // Fetch new emails from server
-  fetchNewEmails: (daysBack = 1) => api.post('/api/emails/fetch', { days_back: daysBack }),
-  
+  fetchNewEmails: (daysBack = 1) => api.post('/emails/fetch', { days_back: daysBack }),
+
   // Generate AI response for email
   generateResponse: (emailId, customContext = null) => 
-    api.post(`/api/emails/${emailId}/generate-response`, { 
+    api.post(`/emails/${emailId}/generate-response`, { 
       email_id: emailId, 
       custom_context: customContext 
     }),
   
   // Send response email
   sendResponse: (emailId, customResponse = null) => 
-    api.post(`/api/emails/${emailId}/send-response`, { custom_response: customResponse }),
-  
+    api.post(`/emails/${emailId}/send-response`, { custom_response: customResponse }),
+
   // Update email
   updateEmail: (emailId, updateData) => 
-    api.put(`/api/emails/${emailId}`, updateData),
-  
+    api.put(`/emails/${emailId}`, updateData),
+
   // Mark email as processed
   markProcessed: (emailId) => 
-    api.post(`/api/emails/${emailId}/mark-processed`),
-  
+    api.post(`/emails/${emailId}/mark-processed`),
+
   // Delete email
   deleteEmail: (emailId) => 
-    api.delete(`/api/emails/${emailId}`),
+    api.delete(`/emails/${emailId}`),
 };
 
 // Dashboard API endpoints
@@ -55,7 +53,7 @@ export const dashboardAPI = {
   // Get dashboard statistics
   getStats: async () => {
     try {
-      return await api.get('/api/dashboard/stats');
+      return await api.get('/dashboard/stats');
     } catch (error) {
       console.error('Dashboard stats API error:', error);
       return { 
@@ -69,7 +67,7 @@ export const dashboardAPI = {
   // Get recent emails for preview
   getRecentEmails: async (limit = 10) => {
     try {
-      return await api.get('/api/dashboard/recent-emails', { params: { limit } });
+      return await api.get('/dashboard/recent-emails', { params: { limit } });
     } catch (error) {
       console.error('Recent emails API error:', error);
       return { 
@@ -83,7 +81,7 @@ export const dashboardAPI = {
   // Get category statistics
   getCategoryStats: async () => {
     try {
-      return await api.get('/api/dashboard/category-stats');
+      return await api.get('/dashboard/category-stats');
     } catch (error) {
       console.error('Category stats API error:', error);
       return { 
@@ -97,7 +95,7 @@ export const dashboardAPI = {
   // Get response statistics
   getResponseStats: async () => {
     try {
-      return await api.get('/api/dashboard/response-stats');
+      return await api.get('/dashboard/response-stats');
     } catch (error) {
       console.error('Response stats API error:', error);
       return { 
@@ -111,7 +109,7 @@ export const dashboardAPI = {
   // Get performance metrics
   getPerformanceMetrics: async (days = 7) => {
     try {
-      return await api.get('/api/dashboard/performance-metrics', { params: { days } });
+      return await api.get('/dashboard/performance-metrics', { params: { days } });
     } catch (error) {
       console.error('Performance metrics API error:', error);
       return { 
