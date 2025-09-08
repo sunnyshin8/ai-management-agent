@@ -1,3 +1,5 @@
 {
-  "trailingSlash": false
+  "rewrites": [
+    { "source": "/api-v1/(.*)", "destination": "https://ai-management-agent-1.onrender.com/api/$1" }
+  ]
 }
