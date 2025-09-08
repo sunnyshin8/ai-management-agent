@@ -117,7 +117,7 @@ secrets.json
 api_keys.txt
 
 # Email data
-emails/
+/emails/
 email_cache/
 attachments/
 
